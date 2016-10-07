@@ -1,12 +1,34 @@
-# goodguide/nginx-static-files-proxy-pass
+# goodguide/nginx-application-proxy
 
-This is meant to be a no-configuration Nginx reverse proxy for a webapp such as a Ruby web server, where you want Nginx to serve static files instead of having to handle that in your app. Nginx will look first for a file matching the request path, then failing that will proxy the request to the upstream application.
+This is a simple nginx container meant to be run alongside a webapp like Rails. It implements a simple HTTP caching layer just above the application (respectful of relevant headers in the application's response) and for any request for `/assets` it returns wide-open CORS headers.
 
-```shell
-docker run -d --name=my-app -e STATIC_FILES_VOLUME=/app/public -p 80 my-app
-docker run --volumes-from=my-app --link my-app:upstream goodguide/nginx-static-files-proxy-pass
-```
+With this, you can opt not to precompile assets (though it's still a good idea). You must however ensure the app serves assets even in a production setting. (The app serves them once to Nginx, then nginx serves them out of its cache subsequently.)
 
-If you define an environment variable on your app container called `STATIC_FILES_VOLUME`, which should be the path to a Volume, `nginx-static-files-proxy-pass` will use that as the document root and will try files in that volume before proxying the request.
+## Example
 
-The app container should expose port 80.
+Here's a typical use-case:
+
+1. Run the app container, giving it a volume for the static assets. In this example, we're also binding our app server to a unix socket which also lives in a (separate) Docker volume.
+
+    ```sh
+    docker run -d --name my-app-1 \
+        --expose 3000
+        my-app:latest \
+        rails s
+    ```
+
+2. Run this Nginx container, sharing the volumes from the app container into it and configuring the paths to them:
+
+    ```sh
+    docker run -d --name my-app-nginx-1 \
+        --volumes-from my-app-1 \
+        -e upstream_server_address='tcp://my-app-1:3000' \
+        -p 3000:80
+        goodguide/nginx-application-proxy
+    ```
+
+## Configuration
+
+There are just two configuration environment variables, both of which must be specified:
+
+- `upstream_server_address` -- goes in the `upstream { server X }` block, [as described in the official docs](https://nginx.org/en/docs/http/ngx_http_upstream_module.html#server)

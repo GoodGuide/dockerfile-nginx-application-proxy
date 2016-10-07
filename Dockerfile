@@ -1,6 +1,11 @@
-FROM nginx:1.9.3
+FROM nginx:stable-alpine
 
-ADD ./nginx-config-wrapper.sh /bin/nginx-config-wrapper
+# delete the default configs
+RUN rm /etc/nginx/nginx.conf /etc/nginx/conf.d/*
 
-ENTRYPOINT ["/bin/nginx-config-wrapper"]
-CMD ["nginx", "-g", "daemon off;"]
+COPY ./entrypoint.sh /bin/entrypoint
+COPY ./nginx.conf.tmpl /etc/nginx/nginx.conf.tmpl
+
+EXPOSE 80
+ENTRYPOINT ["/bin/entrypoint"]
+CMD ["nginx"]
