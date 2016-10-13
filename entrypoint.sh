@@ -8,8 +8,8 @@ set -eu
 for f in $(find /etc/nginx/ -type f -name '*.conf.tmpl'); do
 	output="${f/.conf.tmpl/.conf}"
 	envsubst '${upstream_server_address}' < "$f" > "$output"
-	echo "envsubst: $f -> $output"
+	echo "envsubst: $f -> $output" >&2
 done
 
-echo "exec $@"
+echo "exec $@" >&2
 exec "$@"

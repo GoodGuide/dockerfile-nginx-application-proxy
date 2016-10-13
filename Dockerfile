@@ -140,6 +140,6 @@ MAINTAINER GoodGuide "docker@goodguide.com"
 COPY ./entrypoint.sh /bin/entrypoint
 COPY ./nginx.conf.tmpl /etc/nginx/nginx.conf.tmpl
 
-VOLUME ["/data/nginx/cache"]
+RUN mkdir -p /data/nginx/cache
 ENTRYPOINT ["/bin/entrypoint"]
 CMD ["nginx"]

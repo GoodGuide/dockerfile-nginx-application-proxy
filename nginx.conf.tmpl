@@ -25,14 +25,8 @@ http {
     }
     default_type  application/octet-stream;
 
-    # set up concise log formats
-    log_format upstream 'ra=$remote_addr rm=$request_method ru="$request_uri" s=$status t=$request_time bs=$bytes_sent upstream us=$upstream_status ut=$upstream_response_time uid=$upstream_http_x_request_id ucs=$upstream_cache_status'; # request was forwarded to upstream
-    log_format static_file 'ra=$remote_addr rm=$request_method ru="$request_uri" s=$status t=$request_time bs=$bytes_sent static usc=$upstream_cache_status'; # request was static / from cache -- didn't forward to upstream
-
-    map $upstream_addr $static {
-        "" 1;
-        default 0;
-    }
+    # set up concise text log format
+    log_format text 'ra=$remote_addr rm=$request_method ru="$request_uri" s=$status t=$request_time bs=$bytes_sent id=$txid upstream us=$upstream_status ut=$upstream_response_time ucs=$upstream_cache_status';
 
     # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
     # scheme used to connect to this server
@@ -78,8 +72,7 @@ http {
     server {
         listen     80;
 
-        access_log /dev/stdout static_file if=$static;
-        access_log /dev/stdout upstream if=$upstream_addr;
+        access_log /dev/stdout text;
 
         proxy_connect_timeout      120s;
         proxy_send_timeout         120s;
