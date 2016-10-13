@@ -66,8 +66,12 @@ http {
     proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
     proxy_set_header Proxy ""; # Mitigate httpoxy attack -- never any good reason to forward this on to the app
 
+    # Set X-Request-Id
+    add_header       X-Request-Id $txid;
+    proxy_set_header X-Request-Id $txid;
+
     upstream upstream {
-        server ${upstream_server_address} fail_timeout=50 max_fails=5;
+        server ${upstream_server_address};
         keepalive 32;
     }
 
