@@ -88,6 +88,19 @@ http {
         proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
         location / {
+
+            set $redirect_to_https 0;
+
+            if ($http_x_forwarded_proto != 'https') {
+                set $redirect_to_https 1;
+            }
+            if ($request_uri = '/health/status') {
+                set $redirect_to_https 0;
+            }
+            if ($redirect_to_https = 1) {
+                rewrite ^ https://$host$request_uri? permanent;
+            }
+
             proxy_pass http://upstream;
         }
 

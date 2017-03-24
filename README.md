@@ -4,6 +4,10 @@ This is a simple nginx container meant to be run alongside a webapp like Rails. 
 
 With this, you can opt not to precompile assets (though it's still a good idea). You must however ensure the app serves assets even in a production setting. (The app serves them once to Nginx, then nginx serves them out of its cache subsequently.)
 
+## Rewrite HTTP to HTTPS on AWS ELB
+
+This branch of the nginx-application-proxy is setup to rewrite HTTP requests to HTTPS while setup behind an AWS ELB.  If http_x_forwarded_proto is not set to HTTPS, or is not requesting the path /health/status, the requests will be rewritten to the HTTPS protocol.
+
 ## Example
 
 Here's a typical use-case:
